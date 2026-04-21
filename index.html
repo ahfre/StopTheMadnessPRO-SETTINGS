@@ -1,0 +1,483 @@
+
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StopTheMadness Pro — Innstillinger</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#1c1c1e;color:#e5e5e7;padding:16px;min-height:100vh}
+h1{text-align:center;margin-bottom:16px;font-size:20px;color:#fff}
+.toolbar{text-align:center;margin-bottom:20px}
+.toolbar button{background:#0a84ff;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:15px;cursor:pointer}
+.toolbar button:hover{background:#409cff}
+.columns-wrapper{display:flex;gap:16px;overflow-x:auto;padding-bottom:20px;align-items:flex-start}
+.column{background:#2c2c2e;border-radius:12px;padding:16px;flex-shrink:0;min-width:340px;resize:horizontal;overflow:auto;width:420px}
+.domain-input{width:100%;padding:8px 10px;border-radius:8px;border:1px solid #48484a;background:#1c1c1e;color:#fff;font-size:15px;margin-bottom:12px;text-align:center;font-weight:600}
+.domain-input::placeholder{color:#636366;font-weight:400}
+.section-title{font-size:13px;font-weight:700;color:#8e8e93;text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px;padding-top:8px;border-top:1px solid #38383a}
+.section-title:first-of-type{border-top:none;margin-top:4px}
+.section-note{font-size:11px;color:#636366;margin:-4px 0 6px;font-style:italic}
+.setting-row{display:flex;align-items:center;padding:4px 0;font-size:13px;gap:8px}
+.setting-row.indent{padding-left:24px}
+.setting-row .lbl{flex:1;cursor:default;line-height:1.3}
+.cb-wrap{display:flex;align-items:center;justify-content:center;width:22px;height:22px;flex-shrink:0;cursor:pointer}
+.cb-box{width:18px;height:18px;border:2px solid #636366;border-radius:4px;display:flex;align-items:center;justify-content:center;transition:all .15s;background:transparent}
+.cb-box.checked{background:#0a84ff;border-color:#0a84ff}
+.cb-box.checked::after{content:'✓';color:#fff;font-size:13px;font-weight:700;line-height:1}
+.radio-wrap{display:flex;align-items:center;justify-content:center;width:22px;height:22px;flex-shrink:0;cursor:pointer}
+.radio-circle{width:18px;height:18px;border:2px solid #636366;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .15s;background:transparent}
+.radio-circle.checked{background:#0a84ff;border-color:#0a84ff}
+.radio-circle.checked::after{content:'';width:8px;height:8px;background:#fff;border-radius:50%}
+.setting-select{background:#1c1c1e;color:#e5e5e7;border:1px solid #48484a;border-radius:6px;padding:4px 8px;font-size:12px;flex-shrink:0}
+.setting-number{background:#1c1c1e;color:#e5e5e7;border:1px solid #48484a;border-radius:6px;padding:4px 6px;font-size:12px;width:60px;flex-shrink:0;text-align:center}
+.setting-text{background:#1c1c1e;color:#e5e5e7;border:1px solid #48484a;border-radius:6px;padding:4px 6px;font-size:12px;width:80px;flex-shrink:0}
+.setting-2char{background:#1c1c1e;color:#e5e5e7;border:1px solid #48484a;border-radius:6px;padding:4px 6px;font-size:12px;width:36px;flex-shrink:0;text-align:center}
+.text-area-wrap{margin:4px 0 8px}
+.text-area-wrap textarea{width:100%;min-height:40px;padding:8px;font-family:-apple-system,sans-serif;font-size:12px;color:#e5e5e7;background:#1c1c1e;border:1px solid #48484a;border-radius:6px;resize:none;overflow:hidden;outline:none}
+.code-section{margin:4px 0 8px}
+.code-wrapper{position:relative;background:#1c1c1e;border:1px solid #48484a;border-radius:8px;overflow:hidden;display:flex}
+.line-numbers{padding:10px 6px 10px 8px;text-align:right;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:12px;line-height:1.5;color:#48484a;background:#1c1c1e;-webkit-user-select:none;user-select:none;white-space:pre;border-right:1px solid #38383a;min-width:28px}
+.code-edit-area{flex:1;overflow:hidden}
+.code-edit-area textarea{display:block;width:100%;min-height:60px;padding:10px;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:12px;line-height:1.5;color:#e5e5e7;background:transparent;border:none;outline:none;resize:none;overflow:hidden;white-space:pre;tab-size:2;-webkit-text-fill-color:#e5e5e7}
+.add-font-btn,.user-font-btn{display:inline-block;background:#0a84ff;color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;margin:4px 4px 4px 0}
+.add-font-btn:hover,.user-font-btn:hover{background:#409cff}
+.sync-info{font-size:11px;color:#636366;margin:2px 0}
+.delete-col{background:none;border:none;color:#ff453a;font-size:18px;cursor:pointer;float:right;margin:-4px -4px 0 0;padding:4px 8px;border-radius:6px}
+.delete-col:hover{background:rgba(255,69,58,.15)}
+</style>
+</head>
+<body>
+<h1>StopTheMadness Pro — Innstillinger</h1>
+<div class="toolbar"><button id="addColBtn">＋ Legg til kolonne</button></div>
+<div class="columns-wrapper" id="columnsWrapper"></div>
+<script>
+var STORAGE_KEY='stm_settings_v3';
+
+var settingsDef=[
+{t:'section',label:'General Options'},
+{id:'bypass_amp',t:'select',label:'Bypass AMP:',opts:['links','links and viewer']},
+{id:'bypass_shorteners',t:'cb',label:'Bypass link shorteners'},
+{id:'hide_app_banners',t:'cb',label:'Hide some app banners'},
+{id:'input_maxlength',t:'cb',label:'Input maxlength warning'},
+{id:'override_builtin',t:'cb',label:'Override built-in functions'},
+{id:'protect_2finger',t:'cb',label:'Protect 2-finger click'},
+{id:'protect_autocomplete',t:'cb',label:'Protect autocomplete'},
+{id:'protect_clipboard',t:'cb',label:'Protect clipboard write'},
+{id:'protect_contextual',t:'cb',label:'Protect contextual menus'},
+{id:'protect_contextual_opt',t:'cb',label:'Only with ⌥ key',indent:true},
+{id:'protect_copy_cut_paste',t:'cb',label:'Protect copy, cut, and paste'},
+{id:'protect_drag_drop',t:'cb',label:'Protect drag and drop'},
+{id:'protect_navigation',t:'cb',label:'Protect navigation'},
+{id:'protect_private_win',t:'cb',label:'Protect private windows'},
+{id:'protect_tab_close',t:'cb',label:'Protect tab closing and visibility'},
+{id:'protect_text_replace',t:'cb',label:'Protect text replacements'},
+{id:'protect_text_select',t:'cb',label:'Protect text selection'},
+{id:'protect_vert_scroll',t:'cb',label:'Protect vertical scrollbar'},
+{id:'reload_minutes',t:'cb_num',label:'Reload in minutes:'},
+{id:'shadow_dom',t:'cb',label:'Shadow DOM'},
+{id:'shadow_dom_decl',t:'cb',label:'Declarative Shadow DOM',indent:true},
+{id:'stop_autosubmit',t:'cb',label:'Stop autosubmit of autofilled forms'},
+{id:'stop_autosubmit_cb',t:'cb',label:'Only with checkbox',indent:true},
+{id:'stop_pull_refresh',t:'cb',label:'Stop pull-to-refresh'},
+{id:'stop_link_downloads',t:'cb',label:'Stop link downloads'},
+{id:'stop_link_trackers',t:'cb',label:'Stop link trackers'},
+{id:'stop_scroll_fragment',t:'cb',label:'Stop scroll to text fragment'},
+{id:'stop_scroll_top',t:'cb',label:'Stop scroll to top'},
+
+{t:'section',label:'Audio and Video Options'},
+{id:'show_audio_ctrl',t:'cb',label:'Show native Audio controls'},
+{id:'show_video_ctrl',t:'cb',label:'Show native Video controls'},
+{id:'include_loop_vid',t:'cb',label:'Include loop Videos',indent:true},
+{id:'show_video_toggle',t:'cb',label:'Show Video controls toggle'},
+{id:'stop_autoplay_av',t:'cb',label:'Stop autoplaying Audio and Video'},
+{id:'max_vol_first',t:'cb',label:'Max volume on first Video play',indent:true},
+{id:'stop_all_av',t:'cb',label:'Stop all Audio and Video'},
+{id:'default_speed',t:'num_only',label:'Default playback speed:'},
+{id:'stop_speed_changes',t:'cb',label:'Stop playback speed changes'},
+
+{t:'section',label:'YouTube Options'},
+{id:'yt_pip',t:'cb',label:'Allow Picture-in-Picture'},
+{id:'yt_hide_shorts',t:'cb',label:'Hide YouTube Shorts'},
+{id:'yt_skip_ads',t:'cb',label:'Skip Video ads'},
+{id:'yt_subs',t:'select_2char',label:'Subtitles:',opts:['Default','On','Off']},
+{id:'yt_quality',t:'text_input',label:'Video quality:'},
+
+{t:'section',label:'Dangerous Options'},
+{t:'note',label:'(Frequent site breakage)'},
+{id:'bring_img_front',t:'cb',label:'Bring images to the front'},
+{id:'protect_all_links',t:'cb',label:'Protect all links'},
+{id:'protect_all_taps',t:'cb',label:'Protect all taps'},
+{id:'protect_focus_blur',t:'cb',label:'Protect focus and blur'},
+{id:'protect_history',t:'cb',label:'Protect history'},
+{id:'protect_page_zoom',t:'cb',label:'Protect page zoom controls'},
+{id:'protect_pointer',t:'cb',label:'Protect pointer movement'},
+{id:'protect_scroll_move',t:'cb',label:'Protect scroll movement'},
+{id:'protect_textareas',t:'cb',label:'Protect textareas'},
+{id:'stop_css_anim',t:'cb',label:'Stop CSS animation'},
+{id:'protect_anim_end',t:'cb',label:'Protect animation end',indent:true},
+{id:'stop_js_anim',t:'cb',label:'Stop JavaScript animation'},
+{id:'stop_kb_focus_zoom',t:'cb',label:'Stop keyboard focus zoom'},
+{id:'stop_repeat_timers',t:'cb',label:'Stop repeating timers'},
+{id:'stop_video_pausing',t:'cb',label:'Stop Video pausing'},
+
+{t:'section',label:'Keyboard Options'},
+{id:'copy_link_title',t:'cb',label:'Copy Link Title ⌘X on hover'},
+{id:'copy_link_url',t:'cb',label:'Copy Link URL ⌘C on hover'},
+{id:'copy_page_title',t:'cb',label:'Copy Page Title ⌘X on hover'},
+{id:'copy_page_url',t:'cb',label:'Copy Page URL ⌘C on hover'},
+{id:'copy_hover_popover',t:'cb',label:'Copy on hover shows popover'},
+{id:'hide_page_el',t:'cb',label:'Hide Page Element ⌘⌫ on hover'},
+{id:'protect_cmd_shortcuts',t:'cb',label:'Protect ⌘-key shortcuts'},
+{id:'protect_opt_shortcuts',t:'cb',label:'Protect ⌥-key shortcuts'},
+{id:'protect_ctrl_shortcuts',t:'cb',label:'Protect ^-key shortcuts'},
+{id:'protect_arrow',t:'cb',label:'Protect Arrow keys'},
+{id:'protect_escape',t:'cb',label:'Protect Escape key'},
+{id:'protect_return',t:'cb',label:'Protect Return key'},
+{id:'protect_tab',t:'cb',label:'Protect Tab key'},
+{id:'protect_other_keys',t:'cb',label:'Protect OTHER keys'},
+{id:'run_js_snippet',t:'cb',label:'Run JavaScript snippet ⌘K'},
+{id:'stop_cmd_arrow_nav',t:'cb',label:'Stop ⌘-arrow page navigation'},
+{id:'stop_escape_key',t:'cb',label:'Stop Escape key'},
+{id:'video_ctrl_toggle',t:'cb',label:'Video Controls ^⌘V toggle'},
+{id:'media_highlight',t:'cb',label:'Media Highlight ⇧⌘V toggle'},
+
+{t:'section',label:'Tab Rules'},
+{t:'sublabel',label:'Override window.open:'},
+{id:'force_popups_tabs',t:'cb',label:'Force popups into tabs'},
+{id:'stop_new_windows',t:'cb',label:'Stop new windows'},
+{id:'show_stopped_url',t:'cb',label:'Show stopped window URL',indent:true},
+{t:'sublabel',label:'Same-site links:'},
+{id:'ss_default',t:'radio',group:'same_site',label:'Allow the browser default behavior'},
+{id:'ss_same_tab',t:'radio',group:'same_site',label:'Force link into the same tab'},
+{id:'ss_new_active',t:'radio',group:'same_site',label:'Force link into a new active tab'},
+{id:'ss_new_inactive',t:'radio',group:'same_site',label:'Force link into a new inactive tab'},
+{t:'sublabel',label:'Cross-site links in private windows:'},
+{id:'csp_default',t:'radio',group:'cross_private',label:'Allow the browser default behavior'},
+{id:'csp_same_tab',t:'radio',group:'cross_private',label:'Force link into the same tab'},
+{id:'csp_new_active',t:'radio',group:'cross_private',label:'Force link into a new active tab'},
+{id:'csp_new_inactive',t:'radio',group:'cross_private',label:'Force link into a new inactive tab'},
+{t:'sublabel',label:'Cross-site links in non-private windows:'},
+{id:'csn_default',t:'radio',group:'cross_nonpriv',label:'Allow the browser default behavior'},
+{id:'csn_same_tab',t:'radio',group:'cross_nonpriv',label:'Force link into the same tab'},
+{id:'csn_new_active',t:'radio',group:'cross_nonpriv',label:'Force link into a new active tab'},
+{id:'csn_new_inactive',t:'radio',group:'cross_nonpriv',label:'Force link into a new inactive tab'},
+
+{t:'section',label:'document.cookie='},
+{id:'doc_cookie',t:'textarea'},
+
+{t:'section',label:'Custom CSS'},
+{id:'css_use_preset',t:'cb',label:"Use the preset's CSS too."},
+{id:'custom_css',t:'code',lang:'css'},
+
+{t:'section',label:'Custom JavaScript'},
+{id:'js_use_preset',t:'cb',label:"Use the preset's JavaScript too."},
+{id:'js_allow_before_dom',t:'cb',label:'Allow JS before DOMContentLoaded'},
+{id:'js_top_frame',t:'cb',label:'Run JS only in the top frame'},
+{id:'custom_js',t:'code',lang:'js'},
+
+{t:'section',label:'Font replacements'},
+{id:'font_use_preset',t:'cb',label:"Use the preset's font replacements too."},
+{t:'button',label:'Add font replacement',btnClass:'add-font-btn'},
+{id:'unset_all_fonts',t:'cb',label:"Unset all of the website's fonts"},
+{t:'button',label:'User-installed Fonts...',btnClass:'user-font-btn'},
+
+{t:'section',label:'Comments'},
+{id:'comments',t:'textarea'},
+
+{t:'section',label:'iCloud'},
+{id:'icloud_sync',t:'cb',label:'iCloud Sync'},
+{t:'info',label:'Last Sync Time: (...)'},
+{id:'sync_message',t:'select_only',label:'Last Sync Message:',opts:['Successful sync','Unsuccessful sync']},
+];
+
+function loadData(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||{columns:[]};}catch(e){return{columns:[]};}}
+function saveData(d){localStorage.setItem(STORAGE_KEY,JSON.stringify(d));}
+
+function getDefaultCol(){
+  var v={};
+  settingsDef.forEach(function(s){
+    if(!s.id)return;
+    if(s.t==='cb')v[s.id]=false;
+    else if(s.t==='radio')v[s.id]=false;
+    else if(s.t==='select'||s.t==='select_only')v[s.id]=s.opts[0];
+    else if(s.t==='select_2char'){v[s.id]=s.opts[0];v[s.id+'_lang']='';}
+    else if(s.t==='cb_num'){v[s.id]=false;v[s.id+'_val']='';}
+    else if(s.t==='num_only')v[s.id]='';
+    else if(s.t==='text_input')v[s.id]='';
+    else if(s.t==='textarea')v[s.id]='';
+    else if(s.t==='code')v[s.id]='';
+  });
+  return{domain:'',vals:v};
+}
+
+function renderAll(){
+  var data=loadData();
+  var w=document.getElementById('columnsWrapper');
+  w.innerHTML='';
+  for(var i=0;i<data.columns.length;i++){
+    w.appendChild(buildCol(data,i));
+  }
+}
+
+function buildCol(data,ci){
+  var col=data.columns[ci];
+  var div=document.createElement('div');
+  div.className='column';
+
+  var del=document.createElement('button');
+  del.className='delete-col';del.textContent='✕';del.title='Slett kolonne';
+  del.addEventListener('click',function(){
+    if(confirm('Slett denne kolonnen?')){data.columns.splice(ci,1);saveData(data);renderAll();}
+  });
+  div.appendChild(del);
+
+  var domIn=document.createElement('input');
+  domIn.className='domain-input';domIn.placeholder='Skriv inn domene (f.eks. example.com)';
+  domIn.value=col.domain||'';
+  domIn.addEventListener('input',function(){col.domain=domIn.value;saveData(data);});
+  div.appendChild(domIn);
+
+  for(var i=0;i<settingsDef.length;i++){
+    var s=settingsDef[i];
+    if(s.t==='section'){
+      var st=document.createElement('div');st.className='section-title';st.textContent=s.label;div.appendChild(st);
+    }else if(s.t==='note'){
+      var nt=document.createElement('div');nt.className='section-note';nt.textContent=s.label;div.appendChild(nt);
+    }else if(s.t==='sublabel'){
+      var sl=document.createElement('div');sl.style.cssText='font-size:12px;color:#aaa;margin:8px 0 4px;font-weight:600;';sl.textContent=s.label;div.appendChild(sl);
+    }else if(s.t==='info'){
+      var inf=document.createElement('div');inf.className='sync-info';inf.textContent=s.label;div.appendChild(inf);
+    }else if(s.t==='button'){
+      var btn=document.createElement('button');btn.className=s.btnClass;btn.textContent=s.label;div.appendChild(btn);
+    }else if(s.t==='cb'){
+      div.appendChild(makeCBRow(data,col,s));
+    }else if(s.t==='radio'){
+      div.appendChild(makeRadioRow(data,col,ci,s));
+    }else if(s.t==='select'){
+      div.appendChild(makeSelectRow(data,col,s));
+    }else if(s.t==='select_only'){
+      div.appendChild(makeSelectOnlyRow(data,col,s));
+    }else if(s.t==='select_2char'){
+      div.appendChild(makeSelect2CharRow(data,col,s));
+    }else if(s.t==='cb_num'){
+      div.appendChild(makeCBNumRow(data,col,s));
+    }else if(s.t==='num_only'){
+      div.appendChild(makeNumOnlyRow(data,col,s));
+    }else if(s.t==='text_input'){
+      div.appendChild(makeTextInputRow(data,col,s));
+    }else if(s.t==='textarea'){
+      div.appendChild(makeTextareaBlock(data,col,s));
+    }else if(s.t==='code'){
+      div.appendChild(makeCodeBlock(data,col,s));
+    }
+  }
+  return div;
+}
+
+function makeCBRow(data,col,s){
+  var row=document.createElement('div');row.className='setting-row'+(s.indent?' indent':'');
+  var cb=document.createElement('div');cb.className='cb-wrap';
+  var box=document.createElement('div');box.className='cb-box'+(col.vals[s.id]?' checked':'');
+  cb.appendChild(box);
+  var lbl=document.createElement('span');lbl.className='lbl';lbl.textContent=s.label;
+  cb.addEventListener('click',function(){
+    col.vals[s.id]=!col.vals[s.id];
+    if(col.vals[s.id])box.classList.add('checked');else box.classList.remove('checked');
+    saveData(data);
+  });
+  lbl.addEventListener('click',function(){cb.click();});
+  row.appendChild(cb);row.appendChild(lbl);
+  return row;
+}
+
+function makeRadioRow(data,col,ci,s){
+  var row=document.createElement('div');row.className='setting-row';
+  var rw=document.createElement('div');rw.className='radio-wrap';
+  var circle=document.createElement('div');circle.className='radio-circle'+(col.vals[s.id]?' checked':'');
+  rw.appendChild(circle);
+  var lbl=document.createElement('span');lbl.className='lbl';lbl.textContent=s.label;
+  function doClick(){
+    settingsDef.forEach(function(x){
+      if(x.t==='radio'&&x.group===s.group&&x.id!==s.id)col.vals[x.id]=false;
+    });
+    col.vals[s.id]=true;
+    saveData(data);renderAll();
+  }
+  rw.addEventListener('click',doClick);
+  lbl.addEventListener('click',doClick);
+  row.appendChild(rw);row.appendChild(lbl);
+  return row;
+}
+
+function makeSelectRow(data,col,s){
+  var row=document.createElement('div');row.className='setting-row';
+  var lbl=document.createElement('span');lbl.className='lbl';lbl.textContent=s.label;
+  var sel=document.createElement('select');sel.className='setting-select';
+  for(var i=0;i<s.opts.length;i++){var o=document.createElement('option');o.value=s.opts[i];o.textContent=s.opts[i];sel.appendChild(o);}
+  sel.value=col.vals[s.id]||s.opts[0];
+  sel.addEventListener('change',function(){col.vals[s.id]=sel.value;saveData(data);});
+  row.appendChild(lbl);row.appendChild(sel);
+  return row;
+}
+
+function makeSelectOnlyRow(data,col,s){
+  var row=document.createElement('div');row.className='setting-row';
+  var lbl=document.createElement('span');lbl.className='lbl';lbl.textContent=s.label;
+  var sel=document.createElement('select');sel.className='setting-select';
+  for(var i=0;i<s.opts.length;i++){var o=document.createElement('option');o.value=s.opts[i];o.textContent=s.opts[i];sel.appendChild(o);}
+  sel.value=col.vals[s.id]||s.opts[0];
+  sel.addEventListener('change',function(){col.vals[s.id]=sel.value;saveData(data);});
+  row.appendChild(lbl);row.appendChild(sel);
+  return row;
+}
+
+function makeSelect2CharRow(data,col,s){
+  var row=document.createElement('div');row.className='setting-row';
+  var lbl=document.createElement('span');lbl.className='lbl';lbl.textContent=s.label;
+  var sel=document.createElement('select');sel.className='setting-select';
+  for(var i=0;i<s.opts.length;i++){var o=document.createElement('option');o.value=s.opts[i];o.textContent=s.opts[i];sel.appendChild(o);}
+  sel.value=col.vals[s.id]||s.opts[0];
+  sel.addEventListener('change',function(){col.vals[s.id]=sel.value;saveData(data);});
+  var charIn=document.createElement('input');charIn.className='setting-2char';charIn.maxLength=2;charIn.placeholder='nb';
+  charIn.value=col.vals[s.id+'_lang']||'';
+  charIn.addEventListener('input',function(){col.vals[s.id+'_lang']=charIn.value;saveData(data);});
+  row.appendChild(lbl);row.appendChild(sel);row.appendChild(charIn);
+  return row;
+}
+
+function makeCBNumRow(data,col,s){
+  var row=document.createElement('div');row.className='setting-row';
+  var cb=document.createElement('div');cb.className='cb-wrap';
+  var box=document.createElement('div');box.className='cb-box'+(col.vals[s.id]?' checked':'');
+  cb.appendChild(box);
+  cb.addEventListener('click',function(){
+    col.vals[s.id]=!col.vals[s.id];
+    if(col.vals[s.id])box.classList.add('checked');else box.classList.remove('checked');
+    saveData(data);
+  });
+  var lbl=document.createElement('span');lbl.className='lbl';lbl.textContent=s.label;
+  lbl.addEventListener('click',function(){cb.click();});
+  var numIn=document.createElement('input');numIn.className='setting-number';numIn.type='number';numIn.min=0;numIn.max=9999;
+  numIn.value=col.vals[s.id+'_val']||'';
+  numIn.addEventListener('input',function(){col.vals[s.id+'_val']=numIn.value;saveData(data);});
+  row.appendChild(cb);row.appendChild(lbl);row.appendChild(numIn);
+  return row;
+}
+
+function makeNumOnlyRow(data,col,s){
+  var row=document.createElement('div');row.className='setting-row';
+  var lbl=document.createElement('span');lbl.className='lbl';lbl.textContent=s.label;
+  var numIn=document.createElement('input');numIn.className='setting-number';numIn.type='text';
+  numIn.value=col.vals[s.id]||'';
+  numIn.addEventListener('input',function(){col.vals[s.id]=numIn.value;saveData(data);});
+  row.appendChild(lbl);row.appendChild(numIn);
+  return row;
+}
+
+function makeTextInputRow(data,col,s){
+  var row=document.createElement('div');row.className='setting-row';
+  var lbl=document.createElement('span');lbl.className='lbl';lbl.textContent=s.label;
+  var inp=document.createElement('input');inp.className='setting-text';inp.type='text';
+  inp.value=col.vals[s.id]||'';
+  inp.addEventListener('input',function(){col.vals[s.id]=inp.value;saveData(data);});
+  row.appendChild(lbl);row.appendChild(inp);
+  return row;
+}
+
+function makeTextareaBlock(data,col,s){
+  var wrap=document.createElement('div');wrap.className='text-area-wrap';
+  var ta=document.createElement('textarea');ta.value=col.vals[s.id]||'';
+  ta.addEventListener('input',function(){
+    col.vals[s.id]=ta.value;saveData(data);
+    ta.style.height='auto';ta.style.height=Math.max(40,ta.scrollHeight)+'px';
+  });
+  wrap.appendChild(ta);
+  setTimeout(function(){ta.style.height='auto';ta.style.height=Math.max(40,ta.scrollHeight)+'px';},0);
+  return wrap;
+}
+
+function makeCodeBlock(data,col,s){
+  var sec=document.createElement('div');sec.className='code-section';
+  var wrap=document.createElement('div');wrap.className='code-wrapper';
+  var ln=document.createElement('div');ln.className='line-numbers';
+  var editArea=document.createElement('div');editArea.className='code-edit-area';
+  var ta=document.createElement('textarea');
+  ta.spellcheck=false;ta.autocapitalize='off';ta.autocorrect='off';
+  ta.value=col.vals[s.id]||'';
+
+  editArea.appendChild(ta);
+  wrap.appendChild(ln);wrap.appendChild(editArea);sec.appendChild(wrap);
+
+  function updateLN(){
+    var lines=Math.max((ta.value+' ').split('\n').length,3);
+    var arr=[];for(var i=1;i<=lines;i++)arr.push(i);
+    ln.textContent=arr.join('\n');
+  }
+  function autoH(){
+    ta.style.height='auto';ta.style.height=Math.max(60,ta.scrollHeight)+'px';
+  }
+  ta.addEventListener('input',function(){
+    col.vals[s.id]=ta.value;saveData(data);updateLN();autoH();
+  });
+  ta.addEventListener('keydown',function(e){
+    if(e.key==='Tab'){
+      e.preventDefault();
+      var st=ta.selectionStart,en=ta.selectionEnd;
+      ta.value=ta.value.substring(0,st)+'  '+ta.value.substring(en);
+      ta.selectionStart=ta.selectionEnd=st+2;
+      ta.dispatchEvent(new Event('input'));
+    }
+  });
+  ta.addEventListener('scroll',function(){ln.scrollTop=ta.scrollTop;});
+  setTimeout(function(){updateLN();autoH();},0);
+  return sec;
+}
+
+document.getElementById('addColBtn').addEventListener('click',function(){
+  var data=loadData();
+  data.columns.push(getDefaultCol());
+  saveData(data);
+  renderAll();
+  var w=document.getElementById('columnsWrapper');
+  setTimeout(function(){w.scrollLeft=w.scrollWidth;},50);
+});
+
+(function init(){
+  var data=loadData();
+  if(data.columns.length===0){
+    data.columns.push(getDefaultCol());
+    data.columns.push(getDefaultCol());
+    data.columns.push(getDefaultCol());
+    saveData(data);
+  }
+  renderAll();
+})();
+</script>
+<script>window.parent.postMessage({ action: "ready" }, "*"); 
+ 
+window.console = new Proxy(console, {
+  get(target, prop) {
+    if (['log', 'warn', 'error'].includes(prop)) {
+      return new Proxy(target[prop], {
+        apply(fn, thisArg, args) {
+          fn.apply(thisArg, args);
+          window.parent.postMessage({ action: 'console', 
+            type: prop, 
+            args: args.map((arg) => {
+              try {
+                return JSON.stringify(arg).replace(/^["']|["']$/g, '');
+              } catch (e) {
+                return arg;
+              }
+            }) 
+          }, '*');
+        }
+      });
+    }
+    return target[prop];
+  }
+});
+</script></body>
+</html>
