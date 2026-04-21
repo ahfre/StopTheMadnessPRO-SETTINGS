@@ -1,483 +1,932 @@
-
 <!DOCTYPE html>
 <html lang="no">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StopTheMadness Pro — Innstillinger</title>
+<title>Safari-utvidelser — Innstillinger</title>
+<!-- CodeMirror 5 (syntax highlighting) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/lint/lint.min.js"></script>
 <style>
+/* ── Reset ── */
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#1c1c1e;color:#e5e5e7;padding:16px;min-height:100vh}
-h1{text-align:center;margin-bottom:16px;font-size:20px;color:#fff}
-.toolbar{text-align:center;margin-bottom:20px}
-.toolbar button{background:#0a84ff;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:15px;cursor:pointer}
-.toolbar button:hover{background:#409cff}
-.columns-wrapper{display:flex;gap:16px;overflow-x:auto;padding-bottom:20px;align-items:flex-start}
-.column{background:#2c2c2e;border-radius:12px;padding:16px;flex-shrink:0;min-width:340px;resize:horizontal;overflow:auto;width:420px}
-.domain-input{width:100%;padding:8px 10px;border-radius:8px;border:1px solid #48484a;background:#1c1c1e;color:#fff;font-size:15px;margin-bottom:12px;text-align:center;font-weight:600}
-.domain-input::placeholder{color:#636366;font-weight:400}
-.section-title{font-size:13px;font-weight:700;color:#8e8e93;text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px;padding-top:8px;border-top:1px solid #38383a}
-.section-title:first-of-type{border-top:none;margin-top:4px}
-.section-note{font-size:11px;color:#636366;margin:-4px 0 6px;font-style:italic}
-.setting-row{display:flex;align-items:center;padding:4px 0;font-size:13px;gap:8px}
-.setting-row.indent{padding-left:24px}
-.setting-row .lbl{flex:1;cursor:default;line-height:1.3}
-.cb-wrap{display:flex;align-items:center;justify-content:center;width:22px;height:22px;flex-shrink:0;cursor:pointer}
-.cb-box{width:18px;height:18px;border:2px solid #636366;border-radius:4px;display:flex;align-items:center;justify-content:center;transition:all .15s;background:transparent}
-.cb-box.checked{background:#0a84ff;border-color:#0a84ff}
-.cb-box.checked::after{content:'✓';color:#fff;font-size:13px;font-weight:700;line-height:1}
-.radio-wrap{display:flex;align-items:center;justify-content:center;width:22px;height:22px;flex-shrink:0;cursor:pointer}
-.radio-circle{width:18px;height:18px;border:2px solid #636366;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .15s;background:transparent}
-.radio-circle.checked{background:#0a84ff;border-color:#0a84ff}
-.radio-circle.checked::after{content:'';width:8px;height:8px;background:#fff;border-radius:50%}
-.setting-select{background:#1c1c1e;color:#e5e5e7;border:1px solid #48484a;border-radius:6px;padding:4px 8px;font-size:12px;flex-shrink:0}
-.setting-number{background:#1c1c1e;color:#e5e5e7;border:1px solid #48484a;border-radius:6px;padding:4px 6px;font-size:12px;width:60px;flex-shrink:0;text-align:center}
-.setting-text{background:#1c1c1e;color:#e5e5e7;border:1px solid #48484a;border-radius:6px;padding:4px 6px;font-size:12px;width:80px;flex-shrink:0}
-.setting-2char{background:#1c1c1e;color:#e5e5e7;border:1px solid #48484a;border-radius:6px;padding:4px 6px;font-size:12px;width:36px;flex-shrink:0;text-align:center}
-.text-area-wrap{margin:4px 0 8px}
-.text-area-wrap textarea{width:100%;min-height:40px;padding:8px;font-family:-apple-system,sans-serif;font-size:12px;color:#e5e5e7;background:#1c1c1e;border:1px solid #48484a;border-radius:6px;resize:none;overflow:hidden;outline:none}
-.code-section{margin:4px 0 8px}
-.code-wrapper{position:relative;background:#1c1c1e;border:1px solid #48484a;border-radius:8px;overflow:hidden;display:flex}
-.line-numbers{padding:10px 6px 10px 8px;text-align:right;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:12px;line-height:1.5;color:#48484a;background:#1c1c1e;-webkit-user-select:none;user-select:none;white-space:pre;border-right:1px solid #38383a;min-width:28px}
-.code-edit-area{flex:1;overflow:hidden}
-.code-edit-area textarea{display:block;width:100%;min-height:60px;padding:10px;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:12px;line-height:1.5;color:#e5e5e7;background:transparent;border:none;outline:none;resize:none;overflow:hidden;white-space:pre;tab-size:2;-webkit-text-fill-color:#e5e5e7}
-.add-font-btn,.user-font-btn{display:inline-block;background:#0a84ff;color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;margin:4px 4px 4px 0}
-.add-font-btn:hover,.user-font-btn:hover{background:#409cff}
-.sync-info{font-size:11px;color:#636366;margin:2px 0}
-.delete-col{background:none;border:none;color:#ff453a;font-size:18px;cursor:pointer;float:right;margin:-4px -4px 0 0;padding:4px 8px;border-radius:6px}
-.delete-col:hover{background:rgba(255,69,58,.15)}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:#111113;
+  color:#e5e5e7;
+  min-height:100vh;
+  padding:0;
+}
+
+/* ── Top bar (title + page tabs) ── */
+#top-bar{
+  background:#1c1c1e;
+  padding:12px 16px 10px;
+  position:sticky;
+  top:0;
+  z-index:100;
+  border-bottom:1px solid #2a2a2c;
+}
+#top-bar h1{
+  text-align:center;
+  font-size:18px;
+  color:#fff;
+  margin-bottom:10px;
+}
+#tab-row{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+.tab-wrap{display:flex;align-items:center;gap:2px}
+.tab-move{
+  background:none;border:none;color:#555;
+  font-size:12px;cursor:pointer;padding:2px 5px;
+  border-radius:5px;line-height:1;transition:color .15s,background .15s;
+}
+.tab-move:not(:disabled):hover{color:#e5e5e7;background:#3a3a3c}
+.tab-move:disabled{opacity:0;pointer-events:none}
+.page-tab{
+  border:none;padding:6px 13px;border-radius:7px;
+  font-size:13px;cursor:pointer;transition:all .15s;white-space:nowrap;
+  background:#2c2c2e;color:#8e8e93;
+}
+.page-tab:hover{background:#3a3a3c;color:#e5e5e7}
+.page-tab.on{background:#0a84ff;color:#fff}
+#new-page-btn{
+  background:#3a3a3c;color:#e5e5e7;border:none;
+  padding:6px 12px;border-radius:7px;font-size:13px;cursor:pointer;
+}
+#new-page-btn:hover{background:#48484a}
+
+/* ── Pages container ── */
+#pages-wrap{
+  padding:14px 14px 30px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+/* ── Single page block ── */
+.page-block{
+  background:#1e1e21;
+  border:1px solid #2e2e32;
+  border-radius:13px;
+  padding:12px 12px 14px;
+}
+.page-block-header{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:10px;
+}
+.page-block-title{
+  font-size:13px;font-weight:700;
+  color:#8e8e93;text-transform:uppercase;
+  letter-spacing:.6px;flex:1;
+}
+.add-col-btn{
+  background:#3a3a3c;color:#e5e5e7;border:none;
+  padding:5px 13px;border-radius:7px;font-size:12px;cursor:pointer;
+}
+.add-col-btn:hover{background:#48484a}
+
+/* ── Columns scroll area ── */
+.cols-scroll{
+  display:flex;
+  gap:0;
+  overflow-x:auto;
+  align-items:flex-start;
+  padding-bottom:4px;
+}
+.col-gap{width:12px;flex-shrink:0}
+
+/* ── Column outer ── */
+.col-outer{display:flex;flex-direction:column;flex-shrink:0}
+.col-ctrl{
+  display:flex;justify-content:center;gap:4px;
+  margin-bottom:4px;
+}
+.col-ctrl button{
+  background:#2a2a2d;color:#aaa;border:none;
+  padding:3px 10px;border-radius:6px;font-size:11px;
+  cursor:pointer;transition:all .15s;
+}
+.col-ctrl button:not(:disabled):hover{background:#3a3a3c;color:#e5e5e7}
+.col-ctrl button:disabled{color:#404044;cursor:default}
+.exp-btn{background:#2a2a2d!important;color:#555!important}
+.exp-btn.lit{background:#0a4a88!important;color:#60b4ff!important}
+.exp-btn.lit:hover{background:#0a5599!important;color:#fff!important}
+
+/* ── Column card ── */
+.column{
+  background:#252528;border-radius:10px;
+  padding:12px 12px 14px;
+  width:390px;min-width:390px;
+  position:relative;
+  transition:width .2s;
+}
+.column.wide{width:820px}
+
+/* ── Domain input ── */
+.dom-input{
+  width:100%;padding:7px 10px;border-radius:7px;
+  border:1px solid #3a3a3c;background:#1a1a1c;
+  color:#fff;font-size:14px;text-align:center;font-weight:600;
+  outline:none;margin-bottom:8px;
+}
+.dom-input::placeholder{color:#555;font-weight:400}
+
+/* ── Delete ── */
+.del-col{
+  background:none;border:none;color:#ff453a;
+  font-size:16px;cursor:pointer;
+  position:absolute;top:9px;right:9px;
+  padding:2px 6px;border-radius:5px;
+}
+.del-col:hover{background:rgba(255,69,58,.15)}
+
+/* ── Section / labels ── */
+.sec-title{
+  font-size:11.5px;font-weight:700;color:#8e8e93;
+  text-transform:uppercase;letter-spacing:.5px;
+  margin:12px 0 5px;padding-top:7px;
+  border-top:1px solid #333336;
+}
+.sec-title:first-of-type{border-top:none;margin-top:2px}
+.sec-note{font-size:11px;color:#555;margin:-2px 0 4px;font-style:italic}
+.sub-lbl{font-size:12px;color:#999;margin:6px 0 3px;font-weight:600}
+.info-row{font-size:11px;color:#555;margin:2px 0}
+
+/* ── Setting rows ── */
+.s-row{
+  display:flex;align-items:center;padding:3px 0;
+  font-size:13px;gap:7px;min-width:0;
+}
+.s-row.ind{padding-left:20px}
+.lbl{flex:1;cursor:default;line-height:1.3;min-width:0}
+
+/* ── Checkbox ── */
+.cb-w{width:19px;height:19px;flex-shrink:0;cursor:pointer;
+  display:flex;align-items:center;justify-content:center}
+.cb-b{width:16px;height:16px;border:2px solid #555;border-radius:4px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;flex-shrink:0}
+.cb-b.on{background:#0a84ff;border-color:#0a84ff}
+.cb-b.on::after{content:'✓';color:#fff;font-size:11px;font-weight:700;line-height:1}
+
+/* ── Radio ── */
+.rd-w{width:19px;height:19px;flex-shrink:0;cursor:pointer;
+  display:flex;align-items:center;justify-content:center}
+.rd-c{width:16px;height:16px;border:2px solid #555;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;transition:all .15s}
+.rd-c.on{background:#0a84ff;border-color:#0a84ff}
+.rd-c.on::after{content:'';width:6px;height:6px;background:#fff;border-radius:50%}
+
+/* ── Form controls ── */
+.s-sel{background:#1a1a1c;color:#e5e5e7;border:1px solid #3a3a3c;
+  border-radius:5px;padding:3px 6px;font-size:12px;flex-shrink:0;outline:none}
+.s-num{background:#1a1a1c;color:#e5e5e7;border:1px solid #3a3a3c;
+  border-radius:5px;padding:3px 5px;font-size:12px;width:56px;
+  flex-shrink:0;text-align:center;outline:none}
+.s-txt{background:#1a1a1c;color:#e5e5e7;border:1px solid #3a3a3c;
+  border-radius:5px;padding:3px 6px;font-size:12px;width:74px;
+  flex-shrink:0;outline:none}
+.s-2ch{background:#1a1a1c;color:#e5e5e7;border:1px solid #3a3a3c;
+  border-radius:5px;padding:3px 4px;font-size:12px;width:32px;
+  flex-shrink:0;text-align:center;outline:none}
+
+/* ── Plain textarea ── */
+.plain-ta{
+  width:100%;min-height:36px;padding:7px;
+  font-family:-apple-system,sans-serif;font-size:12px;
+  color:#e5e5e7;background:#1a1a1c;
+  border:1px solid #3a3a3c;border-radius:6px;
+  resize:none;outline:none;
+  overflow-x:auto;overflow-y:hidden;
+  white-space:pre;line-height:1.5;
+  margin:3px 0 5px;
+}
+
+/* ── Action button ── */
+.act-btn{
+  display:inline-block;background:#2c5aa0;color:#fff;
+  border:none;padding:4px 10px;border-radius:6px;
+  font-size:11px;cursor:pointer;margin:3px 3px 3px 0;
+}
+.act-btn:hover{background:#3a6fc0}
+
+/* ── CodeMirror overrides ── */
+.cm-wrap{
+  margin:3px 0 8px;
+  border:1px solid #3a3a3c;
+  border-radius:7px;
+  overflow:hidden;
+}
+.cm-wrap .CodeMirror{
+  height:auto;
+  min-height:60px;
+  font-family:"SF Mono",Menlo,Consolas,monospace;
+  font-size:12px;
+  line-height:1.6;
+  background:#141416;
+  color:#e5e5e7;
+  border-radius:7px;
+}
+.cm-wrap .CodeMirror-scroll{
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  min-height:60px;
+}
+.cm-wrap .CodeMirror-hscrollbar{
+  /* always show hscrollbar when content overflows */
+  display:block;
+}
+.cm-wrap .CodeMirror-lines{padding:9px 0}
+.cm-wrap .CodeMirror pre.CodeMirror-line{padding:0 10px}
+.cm-wrap .CodeMirror-gutters{
+  background:#1a1a1c;
+  border-right:1px solid #2e2e32;
+}
+.cm-wrap .CodeMirror-linenumber{color:#484850;padding:0 6px}
+.cm-wrap .CodeMirror-cursor{border-left:2px solid #e5e5e7}
+/* matching brackets */
+.cm-wrap .CodeMirror-matchingbracket{
+  color:#fff!important;
+  background:#0a84ff!important;
+  border-radius:2px;
+}
+.cm-wrap .CodeMirror-nonmatchingbracket{
+  color:#fff!important;
+  background:#ff453a!important;
+  border-radius:2px;
+}
+/* scrollbar styling */
+.cm-wrap .CodeMirror-hscrollbar::-webkit-scrollbar{height:5px}
+.cm-wrap .CodeMirror-hscrollbar::-webkit-scrollbar-track{background:#1a1a1c}
+.cm-wrap .CodeMirror-hscrollbar::-webkit-scrollbar-thumb{background:#3a3a3c;border-radius:3px}
+.cols-scroll::-webkit-scrollbar{height:5px}
+.cols-scroll::-webkit-scrollbar-track{background:#1a1a1c;border-radius:3px}
+.cols-scroll::-webkit-scrollbar-thumb{background:#3a3a3c;border-radius:3px}
 </style>
 </head>
 <body>
-<h1>StopTheMadness Pro — Innstillinger</h1>
-<div class="toolbar"><button id="addColBtn">＋ Legg til kolonne</button></div>
-<div class="columns-wrapper" id="columnsWrapper"></div>
+
+<div id="top-bar">
+  <h1>Safari-utvidelser — Innstillinger</h1>
+  <div id="tab-row">
+    <!-- rendered by JS -->
+    <button id="new-page-btn">＋ Ny side</button>
+  </div>
+</div>
+
+<div id="pages-wrap"></div>
+
 <script>
-var STORAGE_KEY='stm_settings_v3';
+/* ══════════════════════════════════════════════
+   STORAGE KEY
+══════════════════════════════════════════════ */
+var SK = 'safi_v5';
 
-var settingsDef=[
-{t:'section',label:'General Options'},
-{id:'bypass_amp',t:'select',label:'Bypass AMP:',opts:['links','links and viewer']},
-{id:'bypass_shorteners',t:'cb',label:'Bypass link shorteners'},
-{id:'hide_app_banners',t:'cb',label:'Hide some app banners'},
-{id:'input_maxlength',t:'cb',label:'Input maxlength warning'},
-{id:'override_builtin',t:'cb',label:'Override built-in functions'},
-{id:'protect_2finger',t:'cb',label:'Protect 2-finger click'},
-{id:'protect_autocomplete',t:'cb',label:'Protect autocomplete'},
-{id:'protect_clipboard',t:'cb',label:'Protect clipboard write'},
-{id:'protect_contextual',t:'cb',label:'Protect contextual menus'},
-{id:'protect_contextual_opt',t:'cb',label:'Only with ⌥ key',indent:true},
-{id:'protect_copy_cut_paste',t:'cb',label:'Protect copy, cut, and paste'},
-{id:'protect_drag_drop',t:'cb',label:'Protect drag and drop'},
-{id:'protect_navigation',t:'cb',label:'Protect navigation'},
-{id:'protect_private_win',t:'cb',label:'Protect private windows'},
-{id:'protect_tab_close',t:'cb',label:'Protect tab closing and visibility'},
-{id:'protect_text_replace',t:'cb',label:'Protect text replacements'},
-{id:'protect_text_select',t:'cb',label:'Protect text selection'},
-{id:'protect_vert_scroll',t:'cb',label:'Protect vertical scrollbar'},
-{id:'reload_minutes',t:'cb_num',label:'Reload in minutes:'},
-{id:'shadow_dom',t:'cb',label:'Shadow DOM'},
-{id:'shadow_dom_decl',t:'cb',label:'Declarative Shadow DOM',indent:true},
-{id:'stop_autosubmit',t:'cb',label:'Stop autosubmit of autofilled forms'},
-{id:'stop_autosubmit_cb',t:'cb',label:'Only with checkbox',indent:true},
-{id:'stop_pull_refresh',t:'cb',label:'Stop pull-to-refresh'},
-{id:'stop_link_downloads',t:'cb',label:'Stop link downloads'},
-{id:'stop_link_trackers',t:'cb',label:'Stop link trackers'},
-{id:'stop_scroll_fragment',t:'cb',label:'Stop scroll to text fragment'},
-{id:'stop_scroll_top',t:'cb',label:'Stop scroll to top'},
+/* ══════════════════════════════════════════════
+   TEMPLATES
+══════════════════════════════════════════════ */
+var TPL = {};
 
-{t:'section',label:'Audio and Video Options'},
-{id:'show_audio_ctrl',t:'cb',label:'Show native Audio controls'},
-{id:'show_video_ctrl',t:'cb',label:'Show native Video controls'},
-{id:'include_loop_vid',t:'cb',label:'Include loop Videos',indent:true},
-{id:'show_video_toggle',t:'cb',label:'Show Video controls toggle'},
-{id:'stop_autoplay_av',t:'cb',label:'Stop autoplaying Audio and Video'},
-{id:'max_vol_first',t:'cb',label:'Max volume on first Video play',indent:true},
-{id:'stop_all_av',t:'cb',label:'Stop all Audio and Video'},
-{id:'default_speed',t:'num_only',label:'Default playback speed:'},
-{id:'stop_speed_changes',t:'cb',label:'Stop playback speed changes'},
+TPL.stm = {
+  name: 'StopTheMadness Pro',
+  def: [
+    {t:'section',label:'General Options'},
+    {id:'bypass_amp',      t:'cb_sel', label:'Bypass AMP:',           opts:['links','links and viewer']},
+    {id:'bypass_short',    t:'cb',     label:'Bypass link shorteners'},
+    {id:'hide_banners',    t:'cb',     label:'Hide some app banners'},
+    {id:'input_maxlen',    t:'cb',     label:'Input maxlength warning'},
+    {id:'override_builtin',t:'cb',     label:'Override built-in functions'},
+    {id:'protect_2finger', t:'cb',     label:'Protect 2-finger click'},
+    {id:'protect_autocmp', t:'cb',     label:'Protect autocomplete'},
+    {id:'protect_clip',    t:'cb',     label:'Protect clipboard write'},
+    {id:'protect_ctx',     t:'cb',     label:'Protect contextual menus'},
+    {id:'protect_ctx_opt', t:'cb',     label:'Only with ⌥ key',indent:true},
+    {id:'protect_ccp',     t:'cb',     label:'Protect copy, cut, and paste'},
+    {id:'protect_drag',    t:'cb',     label:'Protect drag and drop'},
+    {id:'protect_nav',     t:'cb',     label:'Protect navigation'},
+    {id:'protect_priv',    t:'cb',     label:'Protect private windows'},
+    {id:'protect_tabclose',t:'cb',     label:'Protect tab closing and visibility'},
+    {id:'protect_txtrep',  t:'cb',     label:'Protect text replacements'},
+    {id:'protect_txtsel',  t:'cb',     label:'Protect text selection'},
+    {id:'protect_vscroll', t:'cb',     label:'Protect vertical scrollbar'},
+    {id:'reload_min',      t:'cb_num', label:'Reload in minutes:'},
+    {id:'shadow_dom',      t:'cb',     label:'Shadow DOM'},
+    {id:'shadow_dom_decl', t:'cb',     label:'Declarative Shadow DOM',indent:true},
+    {id:'stop_autosub',    t:'cb',     label:'Stop autosubmit of autofilled forms'},
+    {id:'stop_autosub_cb', t:'cb',     label:'Only with checkbox',indent:true},
+    {id:'stop_pullref',    t:'cb',     label:'Stop pull-to-refresh'},
+    {id:'stop_linkdl',     t:'cb',     label:'Stop link downloads'},
+    {id:'stop_linktr',     t:'cb',     label:'Stop link trackers'},
+    {id:'stop_scrollfrag', t:'cb',     label:'Stop scroll to text fragment'},
+    {id:'stop_scrolltop',  t:'cb',     label:'Stop scroll to top'},
 
-{t:'section',label:'YouTube Options'},
-{id:'yt_pip',t:'cb',label:'Allow Picture-in-Picture'},
-{id:'yt_hide_shorts',t:'cb',label:'Hide YouTube Shorts'},
-{id:'yt_skip_ads',t:'cb',label:'Skip Video ads'},
-{id:'yt_subs',t:'select_2char',label:'Subtitles:',opts:['Default','On','Off']},
-{id:'yt_quality',t:'text_input',label:'Video quality:'},
+    {t:'section',label:'Audio and Video Options'},
+    {id:'show_audio',      t:'cb', label:'Show native Audio controls'},
+    {id:'show_video',      t:'cb', label:'Show native Video controls'},
+    {id:'incl_loop_vid',   t:'cb', label:'Include loop Videos',indent:true},
+    {id:'show_vid_tog',    t:'cb', label:'Show Video controls toggle'},
+    {id:'stop_autoplay',   t:'cb', label:'Stop autoplaying Audio and Video'},
+    {id:'max_vol_first',   t:'cb', label:'Max volume on first Video play',indent:true},
+    {id:'stop_all_av',     t:'cb', label:'Stop all Audio and Video'},
+    {id:'default_speed',   t:'num_only', label:'Default playback speed:'},
+    {id:'stop_speed_ch',   t:'cb', label:'Stop playback speed changes'},
 
-{t:'section',label:'Dangerous Options'},
-{t:'note',label:'(Frequent site breakage)'},
-{id:'bring_img_front',t:'cb',label:'Bring images to the front'},
-{id:'protect_all_links',t:'cb',label:'Protect all links'},
-{id:'protect_all_taps',t:'cb',label:'Protect all taps'},
-{id:'protect_focus_blur',t:'cb',label:'Protect focus and blur'},
-{id:'protect_history',t:'cb',label:'Protect history'},
-{id:'protect_page_zoom',t:'cb',label:'Protect page zoom controls'},
-{id:'protect_pointer',t:'cb',label:'Protect pointer movement'},
-{id:'protect_scroll_move',t:'cb',label:'Protect scroll movement'},
-{id:'protect_textareas',t:'cb',label:'Protect textareas'},
-{id:'stop_css_anim',t:'cb',label:'Stop CSS animation'},
-{id:'protect_anim_end',t:'cb',label:'Protect animation end',indent:true},
-{id:'stop_js_anim',t:'cb',label:'Stop JavaScript animation'},
-{id:'stop_kb_focus_zoom',t:'cb',label:'Stop keyboard focus zoom'},
-{id:'stop_repeat_timers',t:'cb',label:'Stop repeating timers'},
-{id:'stop_video_pausing',t:'cb',label:'Stop Video pausing'},
+    {t:'section',label:'YouTube Options'},
+    {id:'yt_pip',          t:'cb',        label:'Allow Picture-in-Picture'},
+    {id:'yt_hide_shorts',  t:'cb',        label:'Hide YouTube Shorts'},
+    {id:'yt_skip_ads',     t:'cb',        label:'Skip Video ads'},
+    {id:'yt_subs',         t:'sel_2char', label:'Subtitles:', opts:['Default','On','Off']},
+    {id:'yt_quality',      t:'txt_input', label:'Video quality:'},
 
-{t:'section',label:'Keyboard Options'},
-{id:'copy_link_title',t:'cb',label:'Copy Link Title ⌘X on hover'},
-{id:'copy_link_url',t:'cb',label:'Copy Link URL ⌘C on hover'},
-{id:'copy_page_title',t:'cb',label:'Copy Page Title ⌘X on hover'},
-{id:'copy_page_url',t:'cb',label:'Copy Page URL ⌘C on hover'},
-{id:'copy_hover_popover',t:'cb',label:'Copy on hover shows popover'},
-{id:'hide_page_el',t:'cb',label:'Hide Page Element ⌘⌫ on hover'},
-{id:'protect_cmd_shortcuts',t:'cb',label:'Protect ⌘-key shortcuts'},
-{id:'protect_opt_shortcuts',t:'cb',label:'Protect ⌥-key shortcuts'},
-{id:'protect_ctrl_shortcuts',t:'cb',label:'Protect ^-key shortcuts'},
-{id:'protect_arrow',t:'cb',label:'Protect Arrow keys'},
-{id:'protect_escape',t:'cb',label:'Protect Escape key'},
-{id:'protect_return',t:'cb',label:'Protect Return key'},
-{id:'protect_tab',t:'cb',label:'Protect Tab key'},
-{id:'protect_other_keys',t:'cb',label:'Protect OTHER keys'},
-{id:'run_js_snippet',t:'cb',label:'Run JavaScript snippet ⌘K'},
-{id:'stop_cmd_arrow_nav',t:'cb',label:'Stop ⌘-arrow page navigation'},
-{id:'stop_escape_key',t:'cb',label:'Stop Escape key'},
-{id:'video_ctrl_toggle',t:'cb',label:'Video Controls ^⌘V toggle'},
-{id:'media_highlight',t:'cb',label:'Media Highlight ⇧⌘V toggle'},
+    {t:'section',label:'Dangerous Options'},
+    {t:'note',label:'(Frequent site breakage)'},
+    {id:'bring_img_front', t:'cb', label:'Bring images to the front'},
+    {id:'prot_all_links',  t:'cb', label:'Protect all links'},
+    {id:'prot_all_taps',   t:'cb', label:'Protect all taps'},
+    {id:'prot_focus_blur', t:'cb', label:'Protect focus and blur'},
+    {id:'prot_history',    t:'cb', label:'Protect history'},
+    {id:'prot_zoom',       t:'cb', label:'Protect page zoom controls'},
+    {id:'prot_pointer',    t:'cb', label:'Protect pointer movement'},
+    {id:'prot_scroll_mv',  t:'cb', label:'Protect scroll movement'},
+    {id:'prot_textareas',  t:'cb', label:'Protect textareas'},
+    {id:'stop_css_anim',   t:'cb', label:'Stop CSS animation'},
+    {id:'prot_anim_end',   t:'cb', label:'Protect animation end',indent:true},
+    {id:'stop_js_anim',    t:'cb', label:'Stop JavaScript animation'},
+    {id:'stop_kb_zoom',    t:'cb', label:'Stop keyboard focus zoom'},
+    {id:'stop_rep_timers', t:'cb', label:'Stop repeating timers'},
+    {id:'stop_vid_pause',  t:'cb', label:'Stop Video pausing'},
 
-{t:'section',label:'Tab Rules'},
-{t:'sublabel',label:'Override window.open:'},
-{id:'force_popups_tabs',t:'cb',label:'Force popups into tabs'},
-{id:'stop_new_windows',t:'cb',label:'Stop new windows'},
-{id:'show_stopped_url',t:'cb',label:'Show stopped window URL',indent:true},
-{t:'sublabel',label:'Same-site links:'},
-{id:'ss_default',t:'radio',group:'same_site',label:'Allow the browser default behavior'},
-{id:'ss_same_tab',t:'radio',group:'same_site',label:'Force link into the same tab'},
-{id:'ss_new_active',t:'radio',group:'same_site',label:'Force link into a new active tab'},
-{id:'ss_new_inactive',t:'radio',group:'same_site',label:'Force link into a new inactive tab'},
-{t:'sublabel',label:'Cross-site links in private windows:'},
-{id:'csp_default',t:'radio',group:'cross_private',label:'Allow the browser default behavior'},
-{id:'csp_same_tab',t:'radio',group:'cross_private',label:'Force link into the same tab'},
-{id:'csp_new_active',t:'radio',group:'cross_private',label:'Force link into a new active tab'},
-{id:'csp_new_inactive',t:'radio',group:'cross_private',label:'Force link into a new inactive tab'},
-{t:'sublabel',label:'Cross-site links in non-private windows:'},
-{id:'csn_default',t:'radio',group:'cross_nonpriv',label:'Allow the browser default behavior'},
-{id:'csn_same_tab',t:'radio',group:'cross_nonpriv',label:'Force link into the same tab'},
-{id:'csn_new_active',t:'radio',group:'cross_nonpriv',label:'Force link into a new active tab'},
-{id:'csn_new_inactive',t:'radio',group:'cross_nonpriv',label:'Force link into a new inactive tab'},
+    {t:'section',label:'Keyboard Options'},
+    {id:'copy_link_title', t:'cb', label:'Copy Link Title ⌘X on hover'},
+    {id:'copy_link_url',   t:'cb', label:'Copy Link URL ⌘C on hover'},
+    {id:'copy_page_title', t:'cb', label:'Copy Page Title ⌘X on hover'},
+    {id:'copy_page_url',   t:'cb', label:'Copy Page URL ⌘C on hover'},
+    {id:'copy_hover_pop',  t:'cb', label:'Copy on hover shows popover'},
+    {id:'hide_page_el',    t:'cb', label:'Hide Page Element ⌘⌫ on hover'},
+    {id:'prot_cmd',        t:'cb', label:'Protect ⌘-key shortcuts'},
+    {id:'prot_opt',        t:'cb', label:'Protect ⌥-key shortcuts'},
+    {id:'prot_ctrl',       t:'cb', label:'Protect ^-key shortcuts'},
+    {id:'prot_arrow',      t:'cb', label:'Protect Arrow keys'},
+    {id:'prot_esc',        t:'cb', label:'Protect Escape key'},
+    {id:'prot_return',     t:'cb', label:'Protect Return key'},
+    {id:'prot_tab',        t:'cb', label:'Protect Tab key'},
+    {id:'prot_other_keys', t:'cb', label:'Protect OTHER keys'},
+    {id:'run_js_snip',     t:'cb', label:'Run JavaScript snippet ⌘K'},
+    {id:'stop_cmd_arr',    t:'cb', label:'Stop ⌘-arrow page navigation'},
+    {id:'stop_esc_key',    t:'cb', label:'Stop Escape key'},
+    {id:'vid_ctrl_tog',    t:'cb', label:'Video Controls ^⌘V toggle'},
+    {id:'media_hl',        t:'cb', label:'Media Highlight ⇧⌘V toggle'},
 
-{t:'section',label:'document.cookie='},
-{id:'doc_cookie',t:'textarea'},
+    {t:'section',label:'Tab Rules'},
+    {t:'sublabel',label:'Override window.open:'},
+    {id:'force_pop_tabs',  t:'cb', label:'Force popups into tabs'},
+    {id:'stop_new_wins',   t:'cb', label:'Stop new windows'},
+    {id:'show_stopped_url',t:'cb', label:'Show stopped window URL',indent:true},
+    {t:'sublabel',label:'Same-site links:'},
+    {id:'ss_default',  t:'radio',group:'ss', label:'Allow the browser default behavior'},
+    {id:'ss_same',     t:'radio',group:'ss', label:'Force link into the same tab'},
+    {id:'ss_new_act',  t:'radio',group:'ss', label:'Force link into a new active tab'},
+    {id:'ss_new_inact',t:'radio',group:'ss', label:'Force link into a new inactive tab'},
+    {t:'sublabel',label:'Cross-site links in private windows:'},
+    {id:'csp_default', t:'radio',group:'csp', label:'Allow the browser default behavior'},
+    {id:'csp_same',    t:'radio',group:'csp', label:'Force link into the same tab'},
+    {id:'csp_new_act', t:'radio',group:'csp', label:'Force link into a new active tab'},
+    {id:'csp_new_inact',t:'radio',group:'csp',label:'Force link into a new inactive tab'},
+    {t:'sublabel',label:'Cross-site links in non-private windows:'},
+    {id:'csn_default', t:'radio',group:'csn', label:'Allow the browser default behavior'},
+    {id:'csn_same',    t:'radio',group:'csn', label:'Force link into the same tab'},
+    {id:'csn_new_act', t:'radio',group:'csn', label:'Force link into a new active tab'},
+    {id:'csn_new_inact',t:'radio',group:'csn',label:'Force link into a new inactive tab'},
 
-{t:'section',label:'Custom CSS'},
-{id:'css_use_preset',t:'cb',label:"Use the preset's CSS too."},
-{id:'custom_css',t:'code',lang:'css'},
+    {t:'section',label:'document.cookie='},
+    {id:'doc_cookie', t:'plain_ta'},
 
-{t:'section',label:'Custom JavaScript'},
-{id:'js_use_preset',t:'cb',label:"Use the preset's JavaScript too."},
-{id:'js_allow_before_dom',t:'cb',label:'Allow JS before DOMContentLoaded'},
-{id:'js_top_frame',t:'cb',label:'Run JS only in the top frame'},
-{id:'custom_js',t:'code',lang:'js'},
+    {t:'section',label:'Custom CSS'},
+    {id:'css_use_preset',  t:'cb', label:"Use the preset's CSS too."},
+    {id:'custom_css',      t:'code', lang:'css'},
 
-{t:'section',label:'Font replacements'},
-{id:'font_use_preset',t:'cb',label:"Use the preset's font replacements too."},
-{t:'button',label:'Add font replacement',btnClass:'add-font-btn'},
-{id:'unset_all_fonts',t:'cb',label:"Unset all of the website's fonts"},
-{t:'button',label:'User-installed Fonts...',btnClass:'user-font-btn'},
+    {t:'section',label:'Custom JavaScript'},
+    {id:'js_use_preset',   t:'cb', label:"Use the preset's JavaScript too."},
+    {id:'js_before_dom',   t:'cb', label:'Allow JS before DOMContentLoaded'},
+    {id:'js_top_frame',    t:'cb', label:'Run JS only in the top frame'},
+    {id:'custom_js',       t:'code', lang:'javascript'},
 
-{t:'section',label:'Comments'},
-{id:'comments',t:'textarea'},
+    {t:'section',label:'Font replacements'},
+    {id:'font_use_preset', t:'cb', label:"Use the preset's font replacements too."},
+    {t:'act_btn',label:'Add font replacement'},
+    {id:'unset_fonts',     t:'cb', label:"Unset all of the website's fonts"},
+    {t:'act_btn',label:'User-installed Fonts…'},
 
-{t:'section',label:'iCloud'},
-{id:'icloud_sync',t:'cb',label:'iCloud Sync'},
-{t:'info',label:'Last Sync Time: (...)'},
-{id:'sync_message',t:'select_only',label:'Last Sync Message:',opts:['Successful sync','Unsuccessful sync']},
-];
+    {t:'section',label:'Comments'},
+    {id:'comments', t:'plain_ta'},
 
-function loadData(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||{columns:[]};}catch(e){return{columns:[]};}}
-function saveData(d){localStorage.setItem(STORAGE_KEY,JSON.stringify(d));}
+    {t:'section',label:'iCloud'},
+    {id:'icloud_sync',     t:'cb',       label:'iCloud Sync'},
+    {t:'info',label:'Last Sync Time: (…)'},
+    {id:'sync_msg',        t:'sel_only', label:'Last Sync Message:', opts:['Successful sync','Unsuccessful sync']},
+  ]
+};
 
-function getDefaultCol(){
-  var v={};
-  settingsDef.forEach(function(s){
-    if(!s.id)return;
-    if(s.t==='cb')v[s.id]=false;
-    else if(s.t==='radio')v[s.id]=false;
-    else if(s.t==='select'||s.t==='select_only')v[s.id]=s.opts[0];
-    else if(s.t==='select_2char'){v[s.id]=s.opts[0];v[s.id+'_lang']='';}
-    else if(s.t==='cb_num'){v[s.id]=false;v[s.id+'_val']='';}
-    else if(s.t==='num_only')v[s.id]='';
-    else if(s.t==='text_input')v[s.id]='';
-    else if(s.t==='textarea')v[s.id]='';
-    else if(s.t==='code')v[s.id]='';
+TPL.vimkey   = { name:'VimKey',      def:[] };
+TPL.vimlike  = { name:'VimLike',     def:[] };
+TPL.ublock   = { name:'uBlock Lite', def:[] };
+TPL.nextdns  = { name:'NextDNS',     def:[] };
+
+/* ══════════════════════════════════════════════
+   STATE HELPERS
+══════════════════════════════════════════════ */
+function freshCol(key){
+  var def = (TPL[key]||{def:[]}).def;
+  var v = {};
+  def.forEach(function(s){
+    if(!s.id) return;
+    if(s.t==='cb') v[s.id]=false;
+    if(s.t==='cb_sel'){ v[s.id]=false; v[s.id+'_s']=s.opts[0]; }
+    if(s.t==='cb_num'){ v[s.id]=false; v[s.id+'_n']=''; }
+    if(s.t==='radio') v[s.id]=false;
+    if(s.t==='sel_only') v[s.id]=s.opts[0];
+    if(s.t==='sel_2char'){ v[s.id]=s.opts[0]; v[s.id+'_l']=''; }
+    if(s.t==='num_only'||s.t==='txt_input'||s.t==='plain_ta'||s.t==='code') v[s.id]='';
   });
-  return{domain:'',vals:v};
+  return { domain:'', key:key, vals:v, wide:false };
 }
 
-function renderAll(){
-  var data=loadData();
-  var w=document.getElementById('columnsWrapper');
-  w.innerHTML='';
-  for(var i=0;i<data.columns.length;i++){
-    w.appendChild(buildCol(data,i));
+function freshState(){
+  return {
+    order:   ['stm','vimkey','vimlike','ublock','nextdns'],
+    visible: { stm:true, vimkey:false, vimlike:false, ublock:false, nextdns:false },
+    pages: {
+      stm:     { cols:[ freshCol('stm'), freshCol('stm'), freshCol('stm') ] },
+      vimkey:  { cols:[] },
+      vimlike: { cols:[] },
+      ublock:  { cols:[] },
+      nextdns: { cols:[] },
+    }
+  };
+}
+
+function loadState(){
+  try{
+    var d = JSON.parse(localStorage.getItem(SK));
+    if(!d) return freshState();
+    if(!d.order)   d.order   = ['stm','vimkey','vimlike','ublock','nextdns'];
+    if(!d.visible) d.visible = { stm:true,vimkey:false,vimlike:false,ublock:false,nextdns:false };
+    if(!d.pages)   d.pages   = freshState().pages;
+    return d;
+  } catch(e){ return freshState(); }
+}
+
+function persist(){ localStorage.setItem(SK, JSON.stringify(G)); }
+
+var G = loadState();
+
+/* ══════════════════════════════════════════════
+   CodeMirror instances registry (to avoid leak)
+══════════════════════════════════════════════ */
+var cmInstances = [];
+
+function destroyAllCM(){
+  cmInstances.forEach(function(cm){ try{ cm.toTextArea(); }catch(e){} });
+  cmInstances = [];
+}
+
+/* ══════════════════════════════════════════════
+   RENDER
+══════════════════════════════════════════════ */
+function render(){
+  destroyAllCM();
+  renderTabRow();
+  renderPages();
+}
+
+/* ── Tab row ── */
+function renderTabRow(){
+  var row = document.getElementById('tab-row');
+  var addBtn = document.getElementById('new-page-btn');
+  row.innerHTML = '';
+
+  G.order.forEach(function(key, i){
+    var tmpl = TPL[key];
+    if(!tmpl) return;
+    var wrap = document.createElement('div');
+    wrap.className = 'tab-wrap';
+
+    var lBtn = document.createElement('button');
+    lBtn.className='tab-move'; lBtn.textContent='←';
+    lBtn.disabled = (i===0);
+    lBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      if(i>0){
+        var t=G.order[i]; G.order[i]=G.order[i-1]; G.order[i-1]=t;
+        persist(); render();
+      }
+    });
+
+    var tab = document.createElement('button');
+    tab.className = 'page-tab' + (G.visible[key]?' on':'');
+    tab.textContent = tmpl.name;
+    tab.addEventListener('click', function(){
+      G.visible[key] = !G.visible[key];
+      persist(); render();
+    });
+
+    var rBtn = document.createElement('button');
+    rBtn.className='tab-move'; rBtn.textContent='→';
+    rBtn.disabled = (i===G.order.length-1);
+    rBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      if(i<G.order.length-1){
+        var t=G.order[i]; G.order[i]=G.order[i+1]; G.order[i+1]=t;
+        persist(); render();
+      }
+    });
+
+    wrap.appendChild(lBtn); wrap.appendChild(tab); wrap.appendChild(rBtn);
+    row.appendChild(wrap);
+  });
+
+  row.appendChild(addBtn);
+}
+
+/* ── Pages ── */
+function renderPages(){
+  var wrap = document.getElementById('pages-wrap');
+  wrap.innerHTML = '';
+
+  G.order.forEach(function(key){
+    if(!G.visible[key]) return;
+    var tmpl = TPL[key];
+    if(!tmpl) return;
+
+    var block = document.createElement('div');
+    block.className = 'page-block';
+
+    // Header
+    var hdr = document.createElement('div');
+    hdr.className = 'page-block-header';
+    var title = document.createElement('div');
+    title.className = 'page-block-title';
+    title.textContent = tmpl.name;
+    hdr.appendChild(title);
+
+    if(tmpl.def.length > 0){
+      var addBtn = document.createElement('button');
+      addBtn.className = 'add-col-btn';
+      addBtn.textContent = '＋ Legg til kolonne';
+      addBtn.addEventListener('click', function(){
+        if(!G.pages[key]) G.pages[key]={cols:[]};
+        G.pages[key].cols.push(freshCol(key));
+        persist(); render();
+        // scroll to right
+        setTimeout(function(){
+          var sc = block.querySelector('.cols-scroll');
+          if(sc) sc.scrollLeft = sc.scrollWidth;
+        }, 80);
+      });
+      hdr.appendChild(addBtn);
+    }
+    block.appendChild(hdr);
+
+    // Columns scroll
+    var scroll = document.createElement('div');
+    scroll.className = 'cols-scroll';
+    var pg = G.pages[key] || {cols:[]};
+
+    if(tmpl.def.length === 0){
+      var emp = document.createElement('div');
+      emp.style.cssText='color:#555;font-size:13px;padding:8px 4px;';
+      emp.textContent='(Tom side)';
+      scroll.appendChild(emp);
+    } else {
+      pg.cols.forEach(function(col, ci){
+        if(ci>0){ var g=document.createElement('div'); g.className='col-gap'; scroll.appendChild(g); }
+        scroll.appendChild(buildColOuter(key, ci, col, pg));
+      });
+    }
+
+    block.appendChild(scroll);
+    wrap.appendChild(block);
+  });
+}
+
+/* ── Column outer ── */
+function buildColOuter(key, ci, col, pg){
+  var outer = document.createElement('div');
+  outer.className = 'col-outer';
+
+  var ctrl = document.createElement('div');
+  ctrl.className = 'col-ctrl';
+
+  var lB = mkCtrlBtn('←');
+  lB.disabled = (ci===0);
+  lB.addEventListener('click', function(){
+    if(ci>0){ var t=pg.cols[ci]; pg.cols[ci]=pg.cols[ci-1]; pg.cols[ci-1]=t; persist(); render(); }
+  });
+
+  var expB = document.createElement('button');
+  expB.className = 'exp-btn';
+  expB.textContent = col.wide ? '⟨⟩ Kollaps' : '⟨⟩ Ekspander';
+  expB.title = 'Ekspander/kollaps bredde';
+
+  var rB = mkCtrlBtn('→');
+  rB.disabled = (ci===pg.cols.length-1);
+  rB.addEventListener('click', function(){
+    if(ci<pg.cols.length-1){ var t=pg.cols[ci]; pg.cols[ci]=pg.cols[ci+1]; pg.cols[ci+1]=t; persist(); render(); }
+  });
+
+  ctrl.appendChild(lB); ctrl.appendChild(expB); ctrl.appendChild(rB);
+  outer.appendChild(ctrl);
+
+  var colEl = buildColumn(key, ci, col, pg, expB);
+  outer.appendChild(colEl);
+
+  // Set expand button state after column is built (CM editors present)
+  setTimeout(function(){ refreshExpBtn(expB, col, colEl); }, 120);
+
+  return outer;
+}
+
+function mkCtrlBtn(txt){
+  var b = document.createElement('button');
+  b.textContent = txt;
+  return b;
+}
+
+function refreshExpBtn(btn, col, colEl){
+  var needs = colNeedsWidth(colEl);
+  if(col.wide){
+    btn.classList.add('lit');
+    btn.disabled = false;
+    btn.textContent = '⟨⟩ Kollaps';
+  } else if(needs){
+    btn.classList.add('lit');
+    btn.disabled = false;
+    btn.textContent = '⟨⟩ Ekspander';
+  } else {
+    btn.classList.remove('lit');
+    btn.disabled = false; // always allow toggle
+    btn.textContent = '⟨⟩ Ekspander';
   }
+  btn.onclick = function(){
+    col.wide = !col.wide;
+    persist(); render();
+  };
 }
 
-function buildCol(data,ci){
-  var col=data.columns[ci];
-  var div=document.createElement('div');
-  div.className='column';
+function colNeedsWidth(colEl){
+  // Check if any CM editor or textarea has horizontal overflow
+  var cms = colEl.querySelectorAll('.CodeMirror');
+  for(var i=0; i<cms.length; i++){
+    var sc = cms[i].querySelector('.CodeMirror-sizer');
+    if(sc && sc.offsetWidth > 350) return true;
+  }
+  var tas = colEl.querySelectorAll('.plain-ta');
+  for(var i=0; i<tas.length; i++){
+    if(tas[i].scrollWidth > tas[i].clientWidth+10) return true;
+  }
+  return false;
+}
 
-  var del=document.createElement('button');
-  del.className='delete-col';del.textContent='✕';del.title='Slett kolonne';
-  del.addEventListener('click',function(){
-    if(confirm('Slett denne kolonnen?')){data.columns.splice(ci,1);saveData(data);renderAll();}
+/* ── Column ── */
+function buildColumn(key, ci, col, pg, expB){
+  var def = (TPL[key]||{def:[]}).def;
+  var div = document.createElement('div');
+  div.className = 'column' + (col.wide?' wide':'');
+
+  // Delete button
+  var del = document.createElement('button');
+  del.className='del-col'; del.textContent='✕';
+  del.addEventListener('click', function(){
+    if(confirm('Slett kolonnen?')){ pg.cols.splice(ci,1); persist(); render(); }
   });
   div.appendChild(del);
 
-  var domIn=document.createElement('input');
-  domIn.className='domain-input';domIn.placeholder='Skriv inn domene (f.eks. example.com)';
-  domIn.value=col.domain||'';
-  domIn.addEventListener('input',function(){col.domain=domIn.value;saveData(data);});
-  div.appendChild(domIn);
+  // Domain
+  var dom = document.createElement('input');
+  dom.className='dom-input'; dom.placeholder='Domene (f.eks. example.com)';
+  dom.value = col.domain||'';
+  dom.addEventListener('input', function(){ col.domain=dom.value; persist(); });
+  div.appendChild(dom);
 
-  for(var i=0;i<settingsDef.length;i++){
-    var s=settingsDef[i];
-    if(s.t==='section'){
-      var st=document.createElement('div');st.className='section-title';st.textContent=s.label;div.appendChild(st);
-    }else if(s.t==='note'){
-      var nt=document.createElement('div');nt.className='section-note';nt.textContent=s.label;div.appendChild(nt);
-    }else if(s.t==='sublabel'){
-      var sl=document.createElement('div');sl.style.cssText='font-size:12px;color:#aaa;margin:8px 0 4px;font-weight:600;';sl.textContent=s.label;div.appendChild(sl);
-    }else if(s.t==='info'){
-      var inf=document.createElement('div');inf.className='sync-info';inf.textContent=s.label;div.appendChild(inf);
-    }else if(s.t==='button'){
-      var btn=document.createElement('button');btn.className=s.btnClass;btn.textContent=s.label;div.appendChild(btn);
-    }else if(s.t==='cb'){
-      div.appendChild(makeCBRow(data,col,s));
-    }else if(s.t==='radio'){
-      div.appendChild(makeRadioRow(data,col,ci,s));
-    }else if(s.t==='select'){
-      div.appendChild(makeSelectRow(data,col,s));
-    }else if(s.t==='select_only'){
-      div.appendChild(makeSelectOnlyRow(data,col,s));
-    }else if(s.t==='select_2char'){
-      div.appendChild(makeSelect2CharRow(data,col,s));
-    }else if(s.t==='cb_num'){
-      div.appendChild(makeCBNumRow(data,col,s));
-    }else if(s.t==='num_only'){
-      div.appendChild(makeNumOnlyRow(data,col,s));
-    }else if(s.t==='text_input'){
-      div.appendChild(makeTextInputRow(data,col,s));
-    }else if(s.t==='textarea'){
-      div.appendChild(makeTextareaBlock(data,col,s));
-    }else if(s.t==='code'){
-      div.appendChild(makeCodeBlock(data,col,s));
-    }
+  function onContentChange(){
+    setTimeout(function(){ refreshExpBtn(expB, col, div); }, 60);
   }
+
+  def.forEach(function(s){
+    var el = null;
+    switch(s.t){
+      case 'section':  el=mkSec(s);  break;
+      case 'note':     el=mkNote(s); break;
+      case 'sublabel': el=mkSub(s);  break;
+      case 'info':     el=mkInfo(s); break;
+      case 'act_btn':  el=mkActBtn(s); break;
+      case 'cb':       el=mkCB(col,s,onContentChange);      break;
+      case 'cb_sel':   el=mkCBSel(col,s,onContentChange);   break;
+      case 'cb_num':   el=mkCBNum(col,s,onContentChange);   break;
+      case 'radio':    el=mkRadio(col,s,def);                break;
+      case 'sel_only': el=mkSelOnly(col,s);                  break;
+      case 'sel_2char':el=mkSel2Char(col,s);                 break;
+      case 'num_only': el=mkNumOnly(col,s);                  break;
+      case 'txt_input':el=mkTxtInput(col,s);                 break;
+      case 'plain_ta': el=mkPlainTA(col,s,onContentChange);  break;
+      case 'code':     el=mkCode(col,s,onContentChange);     break;
+    }
+    if(el) div.appendChild(el);
+  });
+
   return div;
 }
 
-function makeCBRow(data,col,s){
-  var row=document.createElement('div');row.className='setting-row'+(s.indent?' indent':'');
-  var cb=document.createElement('div');cb.className='cb-wrap';
-  var box=document.createElement('div');box.className='cb-box'+(col.vals[s.id]?' checked':'');
-  cb.appendChild(box);
-  var lbl=document.createElement('span');lbl.className='lbl';lbl.textContent=s.label;
-  cb.addEventListener('click',function(){
-    col.vals[s.id]=!col.vals[s.id];
-    if(col.vals[s.id])box.classList.add('checked');else box.classList.remove('checked');
-    saveData(data);
-  });
-  lbl.addEventListener('click',function(){cb.click();});
-  row.appendChild(cb);row.appendChild(lbl);
-  return row;
-}
+/* ── Section builders ── */
+function mkSec(s){  var d=document.createElement('div'); d.className='sec-title';  d.textContent=s.label; return d; }
+function mkNote(s){ var d=document.createElement('div'); d.className='sec-note';   d.textContent=s.label; return d; }
+function mkSub(s){  var d=document.createElement('div'); d.className='sub-lbl';    d.textContent=s.label; return d; }
+function mkInfo(s){ var d=document.createElement('div'); d.className='info-row';   d.textContent=s.label; return d; }
+function mkActBtn(s){ var b=document.createElement('button'); b.className='act-btn'; b.textContent=s.label; return b; }
 
-function makeRadioRow(data,col,ci,s){
-  var row=document.createElement('div');row.className='setting-row';
-  var rw=document.createElement('div');rw.className='radio-wrap';
-  var circle=document.createElement('div');circle.className='radio-circle'+(col.vals[s.id]?' checked':'');
-  rw.appendChild(circle);
-  var lbl=document.createElement('span');lbl.className='lbl';lbl.textContent=s.label;
-  function doClick(){
-    settingsDef.forEach(function(x){
-      if(x.t==='radio'&&x.group===s.group&&x.id!==s.id)col.vals[x.id]=false;
-    });
-    col.vals[s.id]=true;
-    saveData(data);renderAll();
+function mkCB(col,s,cb){
+  var row=r(s); var w=cbWrap(); var box=cbBox(col.vals[s.id]);
+  w.appendChild(box);
+  var lbl=mkLbl(s.label);
+  function tog(){ col.vals[s.id]=!col.vals[s.id]; box.classList.toggle('on',col.vals[s.id]); persist(); if(cb)cb(); }
+  w.addEventListener('click',tog); lbl.addEventListener('click',tog);
+  row.appendChild(w); row.appendChild(lbl); return row;
+}
+function mkCBSel(col,s,cb){
+  var row=r(s); var w=cbWrap(); var box=cbBox(col.vals[s.id]);
+  w.appendChild(box);
+  var lbl=mkLbl(s.label);
+  function tog(){ col.vals[s.id]=!col.vals[s.id]; box.classList.toggle('on',col.vals[s.id]); persist(); if(cb)cb(); }
+  w.addEventListener('click',tog); lbl.addEventListener('click',tog);
+  var sel=mkSel(s.opts, col.vals[s.id+'_s']);
+  sel.addEventListener('change',function(){ col.vals[s.id+'_s']=sel.value; persist(); });
+  row.appendChild(w); row.appendChild(lbl); row.appendChild(sel); return row;
+}
+function mkCBNum(col,s,cb){
+  var row=r(s); var w=cbWrap(); var box=cbBox(col.vals[s.id]);
+  w.appendChild(box);
+  var lbl=mkLbl(s.label);
+  function tog(){ col.vals[s.id]=!col.vals[s.id]; box.classList.toggle('on',col.vals[s.id]); persist(); if(cb)cb(); }
+  w.addEventListener('click',tog); lbl.addEventListener('click',tog);
+  var num=document.createElement('input'); num.className='s-num'; num.type='text';
+  num.value=col.vals[s.id+'_n']||'';
+  num.addEventListener('input',function(){ col.vals[s.id+'_n']=num.value; persist(); });
+  row.appendChild(w); row.appendChild(lbl); row.appendChild(num); return row;
+}
+function mkRadio(col,s,def){
+  var row=r(s); var w=document.createElement('div'); w.className='rd-w';
+  var c=document.createElement('div'); c.className='rd-c'+(col.vals[s.id]?' on':'');
+  w.appendChild(c);
+  var lbl=mkLbl(s.label);
+  function click(){
+    def.forEach(function(x){ if(x.t==='radio'&&x.group===s.group) col.vals[x.id]=false; });
+    col.vals[s.id]=true; persist(); render();
   }
-  rw.addEventListener('click',doClick);
-  lbl.addEventListener('click',doClick);
-  row.appendChild(rw);row.appendChild(lbl);
-  return row;
+  w.addEventListener('click',click); lbl.addEventListener('click',click);
+  row.appendChild(w); row.appendChild(lbl); return row;
 }
-
-function makeSelectRow(data,col,s){
-  var row=document.createElement('div');row.className='setting-row';
-  var lbl=document.createElement('span');lbl.className='lbl';lbl.textContent=s.label;
-  var sel=document.createElement('select');sel.className='setting-select';
-  for(var i=0;i<s.opts.length;i++){var o=document.createElement('option');o.value=s.opts[i];o.textContent=s.opts[i];sel.appendChild(o);}
-  sel.value=col.vals[s.id]||s.opts[0];
-  sel.addEventListener('change',function(){col.vals[s.id]=sel.value;saveData(data);});
-  row.appendChild(lbl);row.appendChild(sel);
-  return row;
+function mkSelOnly(col,s){
+  var row=r(s); var lbl=mkLbl(s.label);
+  var sel=mkSel(s.opts,col.vals[s.id]);
+  sel.addEventListener('change',function(){ col.vals[s.id]=sel.value; persist(); });
+  row.appendChild(lbl); row.appendChild(sel); return row;
 }
-
-function makeSelectOnlyRow(data,col,s){
-  var row=document.createElement('div');row.className='setting-row';
-  var lbl=document.createElement('span');lbl.className='lbl';lbl.textContent=s.label;
-  var sel=document.createElement('select');sel.className='setting-select';
-  for(var i=0;i<s.opts.length;i++){var o=document.createElement('option');o.value=s.opts[i];o.textContent=s.opts[i];sel.appendChild(o);}
-  sel.value=col.vals[s.id]||s.opts[0];
-  sel.addEventListener('change',function(){col.vals[s.id]=sel.value;saveData(data);});
-  row.appendChild(lbl);row.appendChild(sel);
-  return row;
+function mkSel2Char(col,s){
+  var row=r(s); var lbl=mkLbl(s.label);
+  var sel=mkSel(s.opts,col.vals[s.id]);
+  sel.addEventListener('change',function(){ col.vals[s.id]=sel.value; persist(); });
+  var ci=document.createElement('input'); ci.className='s-2ch'; ci.maxLength=2; ci.placeholder='nb';
+  ci.value=col.vals[s.id+'_l']||'';
+  ci.addEventListener('input',function(){ col.vals[s.id+'_l']=ci.value; persist(); });
+  row.appendChild(lbl); row.appendChild(sel); row.appendChild(ci); return row;
 }
-
-function makeSelect2CharRow(data,col,s){
-  var row=document.createElement('div');row.className='setting-row';
-  var lbl=document.createElement('span');lbl.className='lbl';lbl.textContent=s.label;
-  var sel=document.createElement('select');sel.className='setting-select';
-  for(var i=0;i<s.opts.length;i++){var o=document.createElement('option');o.value=s.opts[i];o.textContent=s.opts[i];sel.appendChild(o);}
-  sel.value=col.vals[s.id]||s.opts[0];
-  sel.addEventListener('change',function(){col.vals[s.id]=sel.value;saveData(data);});
-  var charIn=document.createElement('input');charIn.className='setting-2char';charIn.maxLength=2;charIn.placeholder='nb';
-  charIn.value=col.vals[s.id+'_lang']||'';
-  charIn.addEventListener('input',function(){col.vals[s.id+'_lang']=charIn.value;saveData(data);});
-  row.appendChild(lbl);row.appendChild(sel);row.appendChild(charIn);
-  return row;
-}
-
-function makeCBNumRow(data,col,s){
-  var row=document.createElement('div');row.className='setting-row';
-  var cb=document.createElement('div');cb.className='cb-wrap';
-  var box=document.createElement('div');box.className='cb-box'+(col.vals[s.id]?' checked':'');
-  cb.appendChild(box);
-  cb.addEventListener('click',function(){
-    col.vals[s.id]=!col.vals[s.id];
-    if(col.vals[s.id])box.classList.add('checked');else box.classList.remove('checked');
-    saveData(data);
-  });
-  var lbl=document.createElement('span');lbl.className='lbl';lbl.textContent=s.label;
-  lbl.addEventListener('click',function(){cb.click();});
-  var numIn=document.createElement('input');numIn.className='setting-number';numIn.type='number';numIn.min=0;numIn.max=9999;
-  numIn.value=col.vals[s.id+'_val']||'';
-  numIn.addEventListener('input',function(){col.vals[s.id+'_val']=numIn.value;saveData(data);});
-  row.appendChild(cb);row.appendChild(lbl);row.appendChild(numIn);
-  return row;
-}
-
-function makeNumOnlyRow(data,col,s){
-  var row=document.createElement('div');row.className='setting-row';
-  var lbl=document.createElement('span');lbl.className='lbl';lbl.textContent=s.label;
-  var numIn=document.createElement('input');numIn.className='setting-number';numIn.type='text';
-  numIn.value=col.vals[s.id]||'';
-  numIn.addEventListener('input',function(){col.vals[s.id]=numIn.value;saveData(data);});
-  row.appendChild(lbl);row.appendChild(numIn);
-  return row;
-}
-
-function makeTextInputRow(data,col,s){
-  var row=document.createElement('div');row.className='setting-row';
-  var lbl=document.createElement('span');lbl.className='lbl';lbl.textContent=s.label;
-  var inp=document.createElement('input');inp.className='setting-text';inp.type='text';
+function mkNumOnly(col,s){
+  var row=r(s); var lbl=mkLbl(s.label);
+  var inp=document.createElement('input'); inp.className='s-num'; inp.type='text';
   inp.value=col.vals[s.id]||'';
-  inp.addEventListener('input',function(){col.vals[s.id]=inp.value;saveData(data);});
-  row.appendChild(lbl);row.appendChild(inp);
-  return row;
+  inp.addEventListener('input',function(){ col.vals[s.id]=inp.value; persist(); });
+  row.appendChild(lbl); row.appendChild(inp); return row;
+}
+function mkTxtInput(col,s){
+  var row=r(s); var lbl=mkLbl(s.label);
+  var inp=document.createElement('input'); inp.className='s-txt'; inp.type='text';
+  inp.value=col.vals[s.id]||'';
+  inp.addEventListener('input',function(){ col.vals[s.id]=inp.value; persist(); });
+  row.appendChild(lbl); row.appendChild(inp); return row;
+}
+function mkPlainTA(col,s,cb){
+  var ta=document.createElement('textarea'); ta.className='plain-ta';
+  ta.value=col.vals[s.id]||'';
+  function resize(){ ta.style.height='1px'; ta.style.height=Math.max(36,ta.scrollHeight)+'px'; }
+  ta.addEventListener('input',function(){ col.vals[s.id]=ta.value; persist(); resize(); if(cb)cb(); });
+  setTimeout(resize,0);
+  return ta;
 }
 
-function makeTextareaBlock(data,col,s){
-  var wrap=document.createElement('div');wrap.className='text-area-wrap';
-  var ta=document.createElement('textarea');ta.value=col.vals[s.id]||'';
-  ta.addEventListener('input',function(){
-    col.vals[s.id]=ta.value;saveData(data);
-    ta.style.height='auto';ta.style.height=Math.max(40,ta.scrollHeight)+'px';
-  });
+/* ── CodeMirror editor ── */
+function mkCode(col,s,cb){
+  var wrap = document.createElement('div');
+  wrap.className = 'cm-wrap';
+
+  var ta = document.createElement('textarea');
+  ta.value = col.vals[s.id]||'';
   wrap.appendChild(ta);
-  setTimeout(function(){ta.style.height='auto';ta.style.height=Math.max(40,ta.scrollHeight)+'px';},0);
+
+  // Defer so the element is in DOM before CM initialises
+  setTimeout(function(){
+    var cm = CodeMirror.fromTextArea(ta, {
+      mode:           s.lang||'javascript',
+      theme:          'material-darker',
+      lineNumbers:    true,
+      matchBrackets:  true,
+      autoCloseBrackets: true,
+      indentUnit:     2,
+      tabSize:        2,
+      indentWithTabs: false,
+      lineWrapping:   false,   // horizontal scroll instead of wrap
+      viewportMargin: Infinity,
+      extraKeys: {
+        Tab: function(cm){
+          if(cm.somethingSelected()){ cm.indentSelection('add'); }
+          else { cm.replaceSelection('  ','end'); }
+        }
+      }
+    });
+
+    cmInstances.push(cm);
+
+    cm.on('change', function(){
+      col.vals[s.id] = cm.getValue();
+      persist();
+      if(cb) cb();
+    });
+
+    // Refresh after layout
+    setTimeout(function(){ cm.refresh(); if(cb)cb(); }, 60);
+  }, 0);
+
   return wrap;
 }
 
-function makeCodeBlock(data,col,s){
-  var sec=document.createElement('div');sec.className='code-section';
-  var wrap=document.createElement('div');wrap.className='code-wrapper';
-  var ln=document.createElement('div');ln.className='line-numbers';
-  var editArea=document.createElement('div');editArea.className='code-edit-area';
-  var ta=document.createElement('textarea');
-  ta.spellcheck=false;ta.autocapitalize='off';ta.autocorrect='off';
-  ta.value=col.vals[s.id]||'';
-
-  editArea.appendChild(ta);
-  wrap.appendChild(ln);wrap.appendChild(editArea);sec.appendChild(wrap);
-
-  function updateLN(){
-    var lines=Math.max((ta.value+' ').split('\n').length,3);
-    var arr=[];for(var i=1;i<=lines;i++)arr.push(i);
-    ln.textContent=arr.join('\n');
-  }
-  function autoH(){
-    ta.style.height='auto';ta.style.height=Math.max(60,ta.scrollHeight)+'px';
-  }
-  ta.addEventListener('input',function(){
-    col.vals[s.id]=ta.value;saveData(data);updateLN();autoH();
+/* ── Tiny helpers ── */
+function r(s){
+  var d=document.createElement('div');
+  d.className='s-row'+(s.indent?' ind':'');
+  return d;
+}
+function cbWrap(){
+  var d=document.createElement('div'); d.className='cb-w'; return d;
+}
+function cbBox(checked){
+  var d=document.createElement('div');
+  d.className='cb-b'+(checked?' on':'');
+  return d;
+}
+function mkLbl(txt){
+  var s=document.createElement('span'); s.className='lbl'; s.textContent=txt; return s;
+}
+function mkSel(opts,val){
+  var sel=document.createElement('select'); sel.className='s-sel';
+  opts.forEach(function(o){
+    var op=document.createElement('option'); op.value=o; op.textContent=o; sel.appendChild(op);
   });
-  ta.addEventListener('keydown',function(e){
-    if(e.key==='Tab'){
-      e.preventDefault();
-      var st=ta.selectionStart,en=ta.selectionEnd;
-      ta.value=ta.value.substring(0,st)+'  '+ta.value.substring(en);
-      ta.selectionStart=ta.selectionEnd=st+2;
-      ta.dispatchEvent(new Event('input'));
-    }
-  });
-  ta.addEventListener('scroll',function(){ln.scrollTop=ta.scrollTop;});
-  setTimeout(function(){updateLN();autoH();},0);
-  return sec;
+  sel.value=val||opts[0];
+  return sel;
 }
 
-document.getElementById('addColBtn').addEventListener('click',function(){
-  var data=loadData();
-  data.columns.push(getDefaultCol());
-  saveData(data);
-  renderAll();
-  var w=document.getElementById('columnsWrapper');
-  setTimeout(function(){w.scrollLeft=w.scrollWidth;},50);
+/* ══════════════════════════════════════════════
+   NEW PAGE
+══════════════════════════════════════════════ */
+document.getElementById('new-page-btn').addEventListener('click', function(){
+  var name = prompt('Navn på ny side:');
+  if(!name||!name.trim()) return;
+  var key = 'c_'+Date.now();
+  TPL[key] = { name:name.trim(), def:[] };
+  G.order.push(key);
+  G.visible[key] = true;
+  G.pages[key] = { cols:[] };
+  persist();
+  render();
 });
 
-(function init(){
-  var data=loadData();
-  if(data.columns.length===0){
-    data.columns.push(getDefaultCol());
-    data.columns.push(getDefaultCol());
-    data.columns.push(getDefaultCol());
-    saveData(data);
-  }
-  renderAll();
-})();
+/* ══════════════════════════════════════════════
+   GO
+══════════════════════════════════════════════ */
+render();
 </script>
-<script>window.parent.postMessage({ action: "ready" }, "*"); 
- 
-window.console = new Proxy(console, {
-  get(target, prop) {
-    if (['log', 'warn', 'error'].includes(prop)) {
-      return new Proxy(target[prop], {
-        apply(fn, thisArg, args) {
-          fn.apply(thisArg, args);
-          window.parent.postMessage({ action: 'console', 
-            type: prop, 
-            args: args.map((arg) => {
-              try {
-                return JSON.stringify(arg).replace(/^["']|["']$/g, '');
-              } catch (e) {
-                return arg;
-              }
-            }) 
-          }, '*');
-        }
-      });
-    }
-    return target[prop];
-  }
-});
-</script></body>
+</body>
 </html>
